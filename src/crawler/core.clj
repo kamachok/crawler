@@ -27,8 +27,10 @@
   ([level root]
     (let [indent (get-indent level)
           url (:url root)
+          info (:info root)
+          label (:label info)
           children @(:children root)]
-      (println indent url)
+      (println indent url label)
       (dorun (map (partial print-tree (inc level)) children)))))
 
 (defn is-good-status? [status]
@@ -148,8 +150,7 @@
     (check-and-print (>= depth 0) "Depth must be >= 0")))
 
 (defn -main [file-path depth]
-  (let [file-path "./samples/links.txt"
-        depth (parse-int depth)]
+  (let [depth (parse-int depth)]
     (if (is-valid-arguments file-path depth)
       (try
         (print-tree (travel-across-urls (read-urls-from-file file-path) depth))
