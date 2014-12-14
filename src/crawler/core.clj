@@ -103,7 +103,7 @@
         label (:label data)]
     (if (= label "ok")
       (let [content (:content info)
-            urls (get-links-from-content root-url content)]
+            urls (get-links-from-content url content)]
         (assoc data :urls urls))
       (assoc data :urls []))))
 
@@ -124,7 +124,6 @@
                             label (:label result)
                             info (:info result)
                             child (make-tree %1 root urls (assoc info :label label) (inc depth))]
-                       (println result)
                        (add-child root child)
                        (travel-across-urls child)) urls)))
       root)))
