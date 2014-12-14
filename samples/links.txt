@@ -1,1 +1,2 @@
-http://learnxinyminutes.com
+http://d3.ru/all/popular
+http://learnxinyminutes.com/docs/clojure/

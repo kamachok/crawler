@@ -29,8 +29,14 @@
           url (:url root)
           info (:info root)
           label (:label info)
-          children @(:children root)]
-      (println indent url label)
+          urls (:urls root)
+          children @(:children root)
+          postfix (cond
+                    (= label "ok") (str "links: " (count urls))
+                    (= label "redirect" (str "to url: " (:location info)))
+                    (= label "bad" (str "status: " (:status info)))
+                    :else "")]
+      (println indent url label postfix)
       (dorun (map (partial print-tree (inc level)) children)))))
 
 (defn is-good-status? [status]
