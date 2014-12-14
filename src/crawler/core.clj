@@ -75,7 +75,8 @@
     (reduce (fn [memo link]
               (let [href (:href (:attrs link))]
                 (if (is-norm-link-href? href)
-                  (conj memo (normalize-urls base-url href)))))
+                  (conj memo (normalize-urls base-url href))
+                  memo)))
             [] elements)))
 
 (defn http-get [url]
