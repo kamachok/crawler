@@ -36,7 +36,9 @@
                     (= label "redirect" (str "to url: " (:location info)))
                     (= label "bad" (str "status: " (:status info)))
                     :else "")]
-      (println indent url label postfix)
+      (if (not= (:type root) "child")
+        (println indent url)
+        (println indent url label postfix))
       (dorun (map (partial print-tree (inc level)) children)))))
 
 (defn is-good-status? [status]
