@@ -40,18 +40,20 @@
   (contains? #{301 302 303 307} status))
 
 (defn is-already-visited? [url]
-  (contains? @(processed) url))
+  (contains? @processed url))
 
 (defn is-valid-absolute-url? [line]
   (urly/absolute? line))
 
 (defn is-host-changed? [root-url url]
-  (let [host (.getHost (urly/url-like url))
-        parent-host (.getHost (urly/url-like root-url))]
-    (and (is-valid-absolute-url? parent-host) (not= host parent-host))))
+  (if (not= root-url "process urls:")
+    (let [host (.getHost (urly/url-like url))
+          parent-host (.getHost (urly/url-like root-url))]
+      (not= host parent-host))
+    false))
 
 (defn is-norm-link-href? [href]
-  (nil? (re-find (re-matcher #"^((javascript|mailto|callto):|#)" href))))
+  (if (nil? href) false (nil? (re-find (re-matcher #"^((javascript|mailto|callto):|#)" href)))))
 
 (defn- normalize-urls [base-url href]
   (let [uri-href (urly/url-like href)]
@@ -74,7 +76,7 @@
                    :follow-redirects false}))
 
 (defn get-raw-responce [url]
-  (try (http-get (url))
+  (try (http-get url)
        (catch ConnectTimeoutException e {:status 408})
        (catch UnknownHostException e {:status 404})
        (catch Exception e {:status 500})))
@@ -91,15 +93,15 @@
                     status (:status raw)
                     headers (:headers raw)]
                 (cond
-                  (is-good-status? status) (wrap-info {:label "ok"} {:content raw})
+                  (is-good-status? status) (wrap-info {:label "ok"} {:content (:body raw)})
                   (is-redirect-status? status) (wrap-info {:label "redirect"} {:location (:location headers)})
                   :else (wrap-info {:label "bad link"} {:status status}))))))
 
 (defn process-url [root-url url]
   (let [data (get-page-info root-url url)
         info (:info data)
-        status (:status data)]
-    (if (= status "ok")
+        label (:label data)]
+    (if (= label "ok")
       (let [content (:content info)
             urls (get-links-from-content root-url content)]
         (assoc data :urls urls))
@@ -117,13 +119,14 @@
           root-url (:url root)
           urls (:urls root)]
       (if (<= depth 0)
-        (map (fn [url]
-                (let [result (process-url root-url url)
-                      urls (:urls result)
-                      info (:info result)
-                      child (make-tree url root urls info (inc depth))]
-                  (add-child root child)
-                  (travel-across-urls child))) urls)) root)))
+        (dorun (pmap #(let [result (process-url root-url %1)
+                           urls (:urls result)
+                           info (:info result)
+                           child (make-tree %1 root urls info (inc depth))]
+                      (add-child root child)
+                      (travel-across-urls child)
+                      true) urls)))
+      root)))
 
 (defn read-urls-from-file [file-path]
   (-> (slurp file-path)
