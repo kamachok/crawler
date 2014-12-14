@@ -120,12 +120,13 @@
           urls (:urls root)]
       (if (<= depth 0)
         (dorun (pmap #(let [result (process-url root-url %1)
-                           urls (:urls result)
-                           info (:info result)
-                           child (make-tree %1 root urls info (inc depth))]
-                      (add-child root child)
-                      (travel-across-urls child)
-                      true) urls)))
+                            urls (:urls result)
+                            label (:label result)
+                            info (:info result)
+                            child (make-tree %1 root urls (assoc info :label label) (inc depth))]
+                       (println result)
+                       (add-child root child)
+                       (travel-across-urls child)) urls)))
       root)))
 
 (defn read-urls-from-file [file-path]
