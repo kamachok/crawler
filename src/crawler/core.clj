@@ -114,10 +114,10 @@
       (travel-across-urls root)))
   ([root]
     (let [depth (:depth root)
-          root-url (:depth root)
+          root-url (:url root)
           urls (:urls root)]
       (if (<= depth 0)
-        (pmap (fn [url]
+        (map (fn [url]
                 (let [result (process-url root-url url)
                       urls (:urls result)
                       info (:info result)
